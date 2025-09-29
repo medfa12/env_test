@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import java.time.Duration;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -14,6 +15,37 @@ class CalculatorTest {
     @BeforeEach
     void setUp() {
         calculator = new Calculator();
+    }
+
+    @Test
+    void testDivideIntegers() {
+        assertEquals(2, calculator.divide(10, 5));
+        assertEquals(-2, calculator.divide(10, -5));
+        assertEquals(0, calculator.divide(0, 5));
+    }
+
+    @Test
+    void testDivideDoubles() {
+        assertEquals(2.0, calculator.divide(10.0, 5.0), 0.0001);
+        assertEquals(-2.0, calculator.divide(10.0, -5.0), 0.0001);
+        assertEquals(0.0, calculator.divide(0.0, 5.0), 0.0001);
+    }
+
+    @Test
+    void testDivideByZeroInt() {
+        assertThrows(
+            ArithmeticException.class,
+            () -> calculator.divide(10, 0)
+        );
+    }
+
+    @Test
+    void testDivideByZeroDouble() {
+        ArithmeticException exception = assertThrows(
+            ArithmeticException.class,
+            () -> calculator.divide(10.0, 0.0)
+        );
+        assertEquals("Division by zero", exception.getMessage());
     }
 
     @Test
@@ -117,5 +149,49 @@ class CalculatorTest {
     void testDoubleInfinityMultiplication() {
         assertEquals(Double.POSITIVE_INFINITY, calculator.multiply(Double.POSITIVE_INFINITY, 2.0));
         assertEquals(Double.NEGATIVE_INFINITY, calculator.multiply(Double.POSITIVE_INFINITY, -2.0));
+    }
+
+ @Test
+    void testIntegerAdditionOverflow2() {
+        try{
+              calculator.add(Integer.MAX_VALUE, 1);
+              fail();
+        }
+       catch( ArithmeticException e){
+                
+       }
+       
+    }
+
+    @Test
+    void testTimeoutNonPreemptive() {
+        assertTimeout(Duration.ofMillis(500), () -> {
+            
+            assertEquals(5, calculator.addx(2, 3));
+        });
+    }
+
+    @Test
+    void testTimeoutPreemptive() {
+        
+            assertTimeoutPreemptively(Duration.ofMillis(1000), () -> {
+                
+                calculator.addx(1, 1);
+            });
+        
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "2, 3, false, 5",
+        "10, 20, false, 30",
+        "1, 0, true, 0"
+    })
+    void testParameterizedMixed(int a, int b, boolean shouldThrow, int expected) {
+        if (shouldThrow) {
+            assertThrows(ArithmeticException.class, () -> calculator.divide(a, b));
+        } else {
+            assertEquals(expected, calculator.add(a, b));
+        }
     }
 }
