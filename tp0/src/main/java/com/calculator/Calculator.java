@@ -2,7 +2,7 @@ package com.calculator;
 
 public class Calculator {
     
-    public int add(int a, int b) {
+    public int add(int a, int b) throws ArithmeticException {
         if (a > 0 && b > 0 && a > Integer.MAX_VALUE - b) {
             throw new ArithmeticException("Integer overflow in addition: " + a + " + " + b);
         }
@@ -22,7 +22,7 @@ public class Calculator {
         return a + b;
     }
     
-    public int multiply(int a, int b) {
+    public int multiply(int a, int b) throws ArithmeticException {
         if (a == 0 || b == 0) {
             return 0;
         }
@@ -40,11 +40,33 @@ public class Calculator {
         return a * b;
     }
     
-    public double multiply(double a, double b) {
+    public double multiply(double a, double b) throws IllegalArgumentException {
         if (Double.isNaN(a) || Double.isNaN(b)) {
             throw new IllegalArgumentException("Cannot multiply NaN values");
         }
         return a * b;
     }
+
+    public int divide(int a, int b) {
+        if (b == 0) {
+            throw new ArithmeticException("Division by zero");
+        }
+        return a / b;
+    }
+
+    public double divide(double a, double b) throws IllegalArgumentException  {
+        if (b == 0.0) {
+            throw new ArithmeticException("Division by zero");
+        }
+        if (Double.isNaN(a) || Double.isNaN(b)) {
+            throw new IllegalArgumentException("Cannot divide NaN values");
+        }
+        return a / b;
+    }
+    public int addx(int a, int b) throws InterruptedException {
+        Thread.sleep(4000);
+        return a + b;
+        
+}
 }
 
