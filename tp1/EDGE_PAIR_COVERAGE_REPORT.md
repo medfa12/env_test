@@ -30,7 +30,7 @@ This report analyzes **edge-pair coverage** for a prime number detection program
 | **Feasible Test Paths** | 3 out of 5 | ✅ 60% |
 | **Infeasible Test Paths** | 2 out of 5 | ❌ 40% |
 | **Actual Coverage Achieved** | 15 out of 19 | ✅ **79%** |
-| **Infeasible Edge-Pairs** | 4 | ❌ Impossible |
+| **Infeasible Edge-Pairs** | 2 | ❌ Impossible |
 
 ### 🏆 Coverage Achievement
 
@@ -57,12 +57,12 @@ The program's CFG consists of **11 nodes** (0-10):
 │  0  │  Entry    │  Program start (runProgram wrapper)       │
 │  1  │  prime_N  │  Initialize x = 2                         │
 │  2  │  prime_N  │  Loop condition: x <= N                   │
-│  3  │  prime_N  │  Loop body entry (x > 1 check)            │
+│  3  │  prime_N  │  Loop condition (x>1) entry (x > 1 check)            │
 │  4  │  isPrime  │  Initialize i = 2                         │
 │  5  │  isPrime  │  Loop condition: i <= sqrt(n)             │
 │  6  │  prime_N  │  Print prime: System.out.print(x + " ")   │
 │  7  │  prime_N  │  Increment x++                            │
-│  8  │  isPrime  │  Divisibility TRUE: n % i == 0            │
+│  8  │  isPrime  │  check cond n % i == 0            │
 │  9  │  isPrime  │  Increment i++                            │
 │ 10  │  Exit     │  Program end (runProgram wrapper)         │
 └─────┴───────────┴───────────────────────────────────────────┘
@@ -123,29 +123,29 @@ An **edge-pair** `[a,b,c]` represents three consecutive nodes: `a → b → c`.
 | # | Edge-Pair | Description | Feasibility |
 |---|-----------|-------------|-------------|
 | 1 | `[0,1,2]` | Start → initialize → loop condition | ✅ Feasible |
-| 2 | `[1,2,3]` | Initialize → loop TRUE → body | ✅ Feasible |
+| 2 | `[1,2,3]` | Initialize → loop TRUE → loop condition (x>1) entry (x > 1 check) | ✅ Feasible |
 | 3 | `[1,2,10]` | Initialize → loop FALSE → exit | ✅ Feasible |
-| 4 | `[2,3,4]` | Loop → body → isPrime entry | ✅ Feasible |
-| 5 | `[2,3,7]` | Loop → body → x++ **(skipping isPrime)** | ❌ **INFEASIBLE** |
-| 6 | `[3,4,5]` | Body → isPrime → inner loop | ✅ Feasible |
-| 7 | `[3,7,2]` | Body → x++ → loop **(skipping isPrime)** | ❌ **INFEASIBLE** |
+| 4 | `[2,3,4]` | Loop → loop condition (x>1) entry → isPrime entry | ✅ Feasible |
+| 5 | `[2,3,7]` | Loop → loop condition (x>1) entry → x++ **(skipping isPrime)** | ❌ **INFEASIBLE** |
+| 6 | `[3,4,5]` | Loop condition (x>1) entry → isPrime → inner loop | ✅ Feasible |
+| 7 | `[3,7,2]` | Loop condition (x>1) entry → x++ → loop **(skipping isPrime)** | ❌ **INFEASIBLE** |
 | 8 | `[4,5,8]` | isPrime → loop → divisible | ✅ Feasible |
 | 9 | `[4,5,6]` | isPrime → loop → print | ✅ Feasible |
 | 10 | `[5,8,7]` | Loop → divisible → x++ | ✅ Feasible |
-| 11 | `[5,8,9]` | Loop → not divisible → i++ | ❌ **INFEASIBLE** |
+| 11 | `[5,8,9]` | Loop → not divisible → i++ | ✅ Feasible |
 | 12 | `[5,6,7]` | Loop exit → print → x++ | ✅ Feasible |
 | 13 | `[8,7,2]` | Divisible → x++ → loop | ✅ Feasible |
 | 14 | `[6,7,2]` | Print → x++ → loop | ✅ Feasible |
-| 15 | `[7,2,3]` | x++ → loop TRUE → body | ✅ Feasible |
+| 15 | `[7,2,3]` | x++ → loop TRUE → loop condition (x>1) entry | ✅ Feasible |
 | 16 | `[7,2,10]` | x++ → loop FALSE → exit | ✅ Feasible |
-| 17 | `[8,9,5]` | Not divisible → i++ → loop | ❌ **INFEASIBLE** |
+| 17 | `[8,9,5]` | Not divisible → i++ → loop | ✅ Feasible |
 | 18 | `[9,5,8]` | i++ → loop → divisible | ✅ Feasible |
 | 19 | `[9,5,6]` | i++ → loop exit → print | ✅ Feasible |
 
 ### 🚫 Why Some Edge-Pairs Are Infeasible
 
 #### **Edge-Pair #5: `[2,3,7]`** and **#7: `[3,7,2]`**
-**Theoretical Idea**: After entering the loop body (node 3), skip calling `isPrime` and go directly to `x++` (node 7).
+**Theoretical Idea**: After evaluating the loop condition entry (node 3), skip calling `isPrime` and go directly to `x++` (node 7).
 
 **Reality**: ❌ The code **always** calls `isPrime(x)` for every x in the loop. There's no path from node 3 to node 7 that bypasses nodes 4, 5, and 6.
 
@@ -159,18 +159,25 @@ for (int x = 2; x <= N; x++) {     // Node 2, 3
 ```
 
 #### **Edge-Pair #11: `[5,8,9]`** and **#17: `[8,9,5]`**
-**Theoretical Idea**: After finding that `n % i != 0` (negating node 8), go to `i++` (node 9).
+**Theoretical Idea**: Node 5 is the inner-loop condition `i <= sqrt(n)`. Node 8 is the conditional `if (n % i == 0)`. When that condition is **false** (i.e. `n % i != 0`), execution continues to the `i++` increment (node 9) and then back to the loop condition (node 5).
 
-**Reality**: ❌ Node 8 represents the **TRUE branch** of `if (n % i == 0)` which **returns false immediately**. The code never reaches node 9 from node 8.
+**Reality**: ✅ These transitions are reachable at runtime. The `if` at node 8 has two outcomes:
+- TRUE (divisor found): `return false` — this exits the function (does not go to node 9).
+- FALSE (no divisor for this i): control flows to node 9 (`i++`) and then to node 5 for the next iteration.
+
+Example (simplified):
 
 ```java
 for (int i = 2; i <= Math.sqrt(n); i++) {   // Node 5
-    if (n % i == 0) {                       // Node 8 (TRUE branch)
-        return false;   // ← RETURNS HERE! Never reaches i++
+    if (n % i == 0) {                       // Node 8 (TRUE -> return)
+        return false;                       // exits (no node 9)
     }
-    // Node 9: i++ (only reachable if condition was FALSE)
+    // Node 9: i++ (reached when n % i != 0)
 }
+// Back to Node 5 for next iteration
 ```
+
+Therefore `[5,8,9]` (loop → conditional (FALSE) → i++) and `[8,9,5]` (conditional → i++ → loop) are feasible and should be marked executable.
 
 ---
 
@@ -221,7 +228,7 @@ for (int i = 2; i <= Math.sqrt(n); i++) {   // Node 5
 **Status**: ❌ **INFEASIBLE**
 
 **Why Infeasible**: 
-The expected path assumes we can go `3 → 7` (body → x++) without calling `isPrime`. This is impossible because the code structure **always** calls `isPrime(x)` when x is in range.
+The expected path assumes we can go `3 → 7` (loop condition entry → x++) without calling `isPrime`. This is impossible because the code structure **always** calls `isPrime(x)` when x is in range.
 
 **Actual Behavior**:
 - x=2: `isPrime(2)` is called → visits nodes 4, 5 → returns TRUE → prints (node 6) → increments (node 7)
@@ -236,14 +243,13 @@ The expected path assumes we can go `3 → 7` (body → x++) without calling `is
 **Status**: ❌ **INFEASIBLE**
 
 **Why Infeasible**:
-The expected subsequence `[5, 8, 9, 5, 8]` is impossible. This would require:
-1. Node 5 (loop condition TRUE)
-2. Node 8 (divisibility found → `return false`)
-3. Node 9 (i++ increment)
+The expected subsequence `[5, 8, 9, 5, 8]` does not occur for `N = 5`.
+While the transition `8 → 9` is feasible when `n % i != 0`, for `n = 5` the next
+iteration check `i <= sqrt(5)` becomes false after `i` is incremented from 2 to 3,
+so control does not reach node 8 again within the same `isPrime` call.
 
-But node 8 **returns immediately**, so nodes 9 can never follow node 8.
-
-**Edge-Pairs Attempted**: `[5,8,9]` `[8,9,5]` ❌ Both infeasible
+In other words, `8 → 9 → 5` occurs, but the trailing `→ 8` does not for any `x ≤ 5`.
+These edge-pairs do appear for larger values (e.g., `x = 9` when testing `N = 9`).
 
 ---
 
@@ -295,13 +301,13 @@ But node 8 **returns immediately**, so nodes 9 can never follow node 8.
 | `[4,5,8]` | ❌ | ✅ | ✅ | ✅ |
 | `[4,5,6]` | ❌ | ✅ | ✅ | ✅ |
 | `[5,8,7]` | ❌ | ✅ | ✅ | ✅ |
-| `[5,8,9]` | ❌ | ❌ | ❌ | ❌ **Infeasible** |
+| `[5,8,9]` | ❌ | ❌ | ✅ | ✅ |
 | `[5,6,7]` | ❌ | ✅ | ✅ | ✅ |
 | `[8,7,2]` | ❌ | ✅ | ✅ | ✅ |
 | `[6,7,2]` | ❌ | ✅ | ✅ | ✅ |
 | `[7,2,3]` | ❌ | ✅ | ✅ | ✅ |
 | `[7,2,10]` | ❌ | ✅ | ✅ | ✅ |
-| `[8,9,5]` | ❌ | ❌ | ❌ | ❌ **Infeasible** |
+| `[8,9,5]` | ❌ | ❌ | ✅ | ✅ |
 | `[9,5,8]` | ❌ | ❌ | ✅ | ✅ |
 | `[9,5,6]` | ❌ | ❌ | ✅ | ✅ |
 | **Total** | **3** | **14** | **16** | **15/19** |
@@ -309,14 +315,13 @@ But node 8 **returns immediately**, so nodes 9 can never follow node 8.
 ### Coverage Statistics
 
 ```
-Feasible Edge-Pairs:     15 out of 19  (79% ✅)
-Infeasible Edge-Pairs:    4 out of 19  (21% ❌)
+Feasible Edge-Pairs:     15 out of 19  (79% ✅)  (15 covered by tests)
+Executable (feasible) Edge-Pairs: 17 out of 19 (89% ✅)
+Infeasible Edge-Pairs:    2 out of 19  (11% ❌)
 
 Infeasible List:
-  • [2,3,7]   - Cannot skip isPrime call
-  • [3,7,2]   - Cannot skip isPrime call  
-  • [5,8,9]   - Cannot continue after return
-  • [8,9,5]   - Cannot continue after return
+    • [2,3,7]   - Cannot skip isPrime call
+    • [3,7,2]   - Cannot skip isPrime call
 ```
 
 ---
@@ -324,15 +329,16 @@ Infeasible List:
 ## 💡 Key Insights
 
 ### 1. **Theory vs. Practice Gap**
-The CFG diagram showed **19 edge-pairs**, but only **15 are actually executable** in the code. This highlights the importance of **dynamic analysis** to validate static models.
+The CFG diagram showed **19 edge-pairs**; dynamic analysis and careful examination show that **17 are executable** in the current implementation and **2 are structurally infeasible**. This highlights the importance of **dynamic analysis** to validate static models.
 
-### 2. **Early Return Breaks Paths**
-The `return false` statement in `isPrime` creates an **early exit** that makes several theoretically-possible transitions impossible:
+### 2. **Early Return Breaks Paths (but not all inner-loop transitions)**
+The `return false` statement in `isPrime` creates an **early exit** for the case when a divisor is found. That early return makes some theoretically-possible transitions infeasible (for example, paths that would require continuing inside `isPrime` after a found divisor). However, the FALSE branch of the `if (n % i == 0)` condition (when `n % i != 0`) continues to `i++`, so several inner-loop edge-pairs are still reachable.
 
 ```java
 if (n % i == 0) {
-    return false;  // ← Edge-pairs [5,8,9] and [8,9,5] become infeasible
+    return false;  // exits early when divisor found
 }
+// If not divisible, execution continues to i++ and next iteration
 ```
 
 ### 3. **Mandatory Function Calls**
@@ -346,7 +352,7 @@ Different values of N exercise different paths:
 - **N=5,9**: Multiple loop iterations (higher coverage)
 
 ### 5. **Coverage Isn't Always 100%**
-Achieving **79% edge-pair coverage** with **3 test cases** is excellent when **21% is structurally infeasible**.
+Achieving **79% edge-pair coverage** with **3 test cases** is excellent when **11% is structurally infeasible**.
 
 ---
 
