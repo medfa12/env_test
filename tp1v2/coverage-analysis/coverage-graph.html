@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Incremental Test Coverage Analysis</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .charts-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .chart-wrapper {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .chart-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .metrics-table {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th {
+            background: #4CAF50;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #ddd;
+        }
+        tr:hover {
+            background: #f5f5f5;
+        }
+        .baseline-row {
+            background: #e8f5e9;
+            font-weight: 600;
+        }
+        .coverage-high { color: #4CAF50; font-weight: 600; }
+        .coverage-medium { color: #FF9800; font-weight: 600; }
+        .coverage-low { color: #F44336; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <h1>📊 Incremental Test Coverage Analysis</h1>
+    <div class="subtitle">PrintPrimes_src.java - Test Path Coverage Contribution</div>
+
+    <div class="charts-container">
+        <div class="chart-wrapper">
+            <div class="chart-title">Line Coverage Progress</div>
+            <canvas id="lineCoverageChart"></canvas>
+        </div>
+        <div class="chart-wrapper">
+            <div class="chart-title">Branch Coverage Progress</div>
+            <canvas id="branchCoverageChart"></canvas>
+        </div>
+    </div>
+
+    <div class="metrics-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Configuration</th>
+                    <th>Lines Covered</th>
+                    <th>Line %</th>
+                    <th>Branches Covered</th>
+                    <th>Branch %</th>
+                    <th>Incremental Contribution</th>
+                </tr>
+            </thead>
+            <tbody id="metricsBody"></tbody>
+        </table>
+    </div>
+
+    <script>
+        // Data from metrics.csv
+        const data = [
+            { config: '01-all-tests (baseline)', lines: 20, total: 32, linePct: 62.5, branches: 12, branchTotal: 14, branchPct: 85.7 },
+            { config: '02-TP1-only', lines: 8, total: 32, linePct: 25.0, branches: 3, branchTotal: 14, branchPct: 21.4 },
+            { config: '03-TP1+TP2', lines: 20, total: 32, linePct: 62.5, branches: 12, branchTotal: 14, branchPct: 85.7 },
+            { config: '04-TP1+TP2+TP2variant', lines: 20, total: 32, linePct: 62.5, branches: 12, branchTotal: 14, branchPct: 85.7 },
+            { config: '05-TP1-to-TP3', lines: 20, total: 32, linePct: 62.5, branches: 12, branchTotal: 14, branchPct: 85.7 },
+            { config: '06-TP1-to-TP4', lines: 20, total: 32, linePct: 62.5, branches: 12, branchTotal: 14, branchPct: 85.7 },
+            { config: '07-TP1-to-TP5', lines: 20, total: 32, linePct: 62.5, branches: 12, branchTotal: 14, branchPct: 85.7 }
+        ];
+
+        // Prepare chart data
+        const labels = data.map(d => d.config.replace(/\d+-/, '').replace('all-tests (baseline)', 'Baseline'));
+        const lineCoverage = data.map(d => d.linePct);
+        const branchCoverage = data.map(d => d.branchPct);
+
+        // Line Coverage Chart
+        new Chart(document.getElementById('lineCoverageChart'), {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Line Coverage %',
+                    data: lineCoverage,
+                    borderColor: '#4CAF50',
+                    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 5,
+                    pointHoverRadius: 7
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: value => value + '%'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 45
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => `Coverage: ${ctx.parsed.y.toFixed(1)}%`
+                        }
+                    }
+                }
+            }
+        });
+
+        // Branch Coverage Chart
+        new Chart(document.getElementById('branchCoverageChart'), {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Branch Coverage %',
+                    data: branchCoverage,
+                    borderColor: '#2196F3',
+                    backgroundColor: 'rgba(33, 150, 243, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 5,
+                    pointHoverRadius: 7
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: value => value + '%'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 45
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => `Coverage: ${ctx.parsed.y.toFixed(1)}%`
+                        }
+                    }
+                }
+            }
+        });
+
+        // Populate table
+        const tbody = document.getElementById('metricsBody');
+        data.forEach((row, idx) => {
+            const tr = document.createElement('tr');
+            if (idx === 0) tr.className = 'baseline-row';
+
+            const contribution = idx === 0 ? 'Baseline' : 
+                                idx === 1 ? `+${row.lines} lines, +${row.branches} branches` :
+                                `+${row.lines - data[idx-1].lines} lines, +${row.branches - data[idx-1].branches} branches`;
+
+            const lineCssClass = row.linePct >= 60 ? 'coverage-high' : row.linePct >= 30 ? 'coverage-medium' : 'coverage-low';
+            const branchCssClass = row.branchPct >= 70 ? 'coverage-high' : row.branchPct >= 40 ? 'coverage-medium' : 'coverage-low';
+
+            tr.innerHTML = `
+                <td>${row.config}</td>
+                <td>${row.lines}/${row.total}</td>
+                <td class="${lineCssClass}">${row.linePct}%</td>
+                <td>${row.branches}/${row.branchTotal}</td>
+                <td class="${branchCssClass}">${row.branchPct}%</td>
+                <td>${contribution}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    </script>
+</body>
+</html>

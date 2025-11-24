@@ -5,11 +5,13 @@
 // See PrintPrimes.num for a numbered version.
 // No JUnit tests at this time
 
+package com.primes;
+
 /** *****************************************************
 * Finds and prints n prime integers
 * Jeff Offutt, Spring 2003
 ********************************************************* */
-public class PrintPrimes
+public class PrintPrimes_src
 {
 
    private static boolean isDivisible (int i, int j)
@@ -19,7 +21,7 @@ public class PrintPrimes
       else
          return false;
    }
-   private static void printPrimes (int n)
+   public static void printPrimes (int n)
    {
       int curPrime;           // Value currently considered for primeness
       int numPrimes;          // Number of primes found so far.

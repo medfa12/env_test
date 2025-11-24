@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PrintPrimes_src.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TP1 - PrintPrimes</a> &gt; <a href="index.source.html" class="el_package">com.primes</a> &gt; <span class="el_source">PrintPrimes_src.java</span></div><h1>PrintPrimes_src.java</h1><pre class="source lang-java linenums">// Introduction to Software Testing
+// Authors: Paul Ammann &amp; Jeff Offutt
+// Chapter 7; page ??
+// Can be run from command line
+// See PrintPrimes.num for a numbered version.
+// No JUnit tests at this time
+
+package com.primes;
+
+/** *****************************************************
+* Finds and prints n prime integers
+* Jeff Offutt, Spring 2003
+********************************************************* */
+<span class="nc" id="L14">public class PrintPrimes_src</span>
+{
+
+   private static boolean isDivisible (int i, int j)
+   {
+<span class="nc bnc" id="L19" title="All 2 branches missed.">      if (j%i == 0)</span>
+<span class="nc" id="L20">         return true;</span>
+      else
+<span class="nc" id="L22">         return false;</span>
+   }
+   public static void printPrimes (int n)
+   {
+      int curPrime;           // Value currently considered for primeness
+      int numPrimes;          // Number of primes found so far.
+      boolean isPrime;        // Is curPrime prime?
+<span class="fc" id="L29">      int [] primes = new int [100]; // The list of prime numbers.</span>
+    
+      // Initialize 2 into the list of primes.
+<span class="fc" id="L32">      primes [0] = 2;</span>
+<span class="fc" id="L33">      numPrimes = 1;</span>
+<span class="fc" id="L34">      curPrime  = 2;</span>
+<span class="pc bpc" id="L35" title="1 of 2 branches missed.">      while (numPrimes &lt; n)</span>
+      {
+<span class="nc" id="L37">         curPrime++;  // next number to consider ...</span>
+<span class="nc" id="L38">         isPrime = true;</span>
+<span class="nc bnc" id="L39" title="All 2 branches missed.">         for (int i = 0; i &lt;= numPrimes-1; i++)</span>
+         {   // for each previous prime.
+<span class="nc bnc" id="L41" title="All 2 branches missed.">            if (isDivisible (primes[i], curPrime))</span>
+            {  // Found a divisor, curPrime is not prime.
+<span class="nc" id="L43">               isPrime = false;</span>
+<span class="nc" id="L44">               break; // out of loop through primes.</span>
+            }
+         }
+<span class="nc bnc" id="L47" title="All 2 branches missed.">         if (isPrime)</span>
+         {   // save it!
+<span class="nc" id="L49">            primes[numPrimes] = curPrime;</span>
+<span class="nc" id="L50">            numPrimes++;</span>
+         }
+      }  // End while
+   
+      // Print all the primes out.
+<span class="fc bfc" id="L55" title="All 2 branches covered.">      for (int i = 0; i &lt;= numPrimes-1; i++)</span>
+      {
+<span class="fc" id="L57">         System.out.println (&quot;Prime: &quot; + primes[i]);</span>
+      }
+<span class="fc" id="L59">   }  // end printPrimes</span>
+   
+   public static void main (String []argv)
+   {  // Driver method for printPrimes
+      // Read an integer from standard input, call printPrimes()
+<span class="nc" id="L64">      int integer = 0;</span>
+<span class="nc bnc" id="L65" title="All 2 branches missed.">      if (argv.length != 1)</span>
+      {
+<span class="nc" id="L67">         System.out.println (&quot;Usage: java PrintPrimes v1 &quot;);</span>
+<span class="nc" id="L68">         return;</span>
+      }
+   
+      try
+      {
+<span class="nc" id="L73">         integer = Integer.parseInt (argv[0]);</span>
+      }
+<span class="nc" id="L75">      catch (NumberFormatException e)</span>
+      {
+<span class="nc" id="L77">         System.out.println (&quot;Entry must be a integer, using 1.&quot;);</span>
+<span class="nc" id="L78">         integer = 1;</span>
+<span class="nc" id="L79">      }</span>
+   
+<span class="nc" id="L81">      printPrimes (integer);</span>
+<span class="nc" id="L82">   }</span>
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

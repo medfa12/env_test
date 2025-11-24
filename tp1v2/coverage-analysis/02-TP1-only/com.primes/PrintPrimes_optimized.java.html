@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PrintPrimes_optimized.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TP1 - PrintPrimes</a> &gt; <a href="index.source.html" class="el_package">com.primes</a> &gt; <span class="el_source">PrintPrimes_optimized.java</span></div><h1>PrintPrimes_optimized.java</h1><pre class="source lang-java linenums">package com.primes;
+
+<span class="nc" id="L3">public class PrintPrimes_optimized {</span>
+
+    private static boolean isDivisible(int i, int j) {
+<span class="nc bnc" id="L6" title="All 2 branches missed.">        if (j % i == 0)</span>
+<span class="nc" id="L7">            return true;</span>
+        else
+<span class="nc" id="L9">            return false;</span>
+    }
+
+    public static void printPrimes(int n) {
+        int curPrime;
+        int numPrimes;
+        boolean isPrime;
+<span class="nc" id="L16">        int[] primes = new int[100];</span>
+
+<span class="nc" id="L18">        primes[0] = 2;</span>
+<span class="nc" id="L19">        numPrimes = 1;</span>
+<span class="nc" id="L20">        curPrime = 2;</span>
+<span class="nc bnc" id="L21" title="All 2 branches missed.">        while (numPrimes &lt; n) {</span>
+<span class="nc" id="L22">            curPrime++;</span>
+<span class="nc" id="L23">            isPrime = true;</span>
+<span class="nc" id="L24">            int sqrtCurPrime = (int) Math.sqrt(curPrime);</span>
+<span class="nc bnc" id="L25" title="All 2 branches missed.">            for (int i = 0; i &lt;= numPrimes - 1; i++) {</span>
+<span class="nc bnc" id="L26" title="All 2 branches missed.">                if (primes[i] &gt; sqrtCurPrime)</span>
+<span class="nc" id="L27">                    break;</span>
+<span class="nc bnc" id="L28" title="All 2 branches missed.">                if (isDivisible(primes[i], curPrime)) {</span>
+<span class="nc" id="L29">                    isPrime = false;</span>
+<span class="nc" id="L30">                    break;</span>
+                }
+            }
+<span class="nc bnc" id="L33" title="All 2 branches missed.">            if (isPrime) {</span>
+<span class="nc" id="L34">                primes[numPrimes] = curPrime;</span>
+<span class="nc" id="L35">                numPrimes++;</span>
+            }
+<span class="nc" id="L37">        }</span>
+
+<span class="nc bnc" id="L39" title="All 2 branches missed.">        for (int i = 0; i &lt;= numPrimes - 1; i++) {</span>
+<span class="nc" id="L40">            System.out.println(&quot;Prime: &quot; + primes[i]);</span>
+        }
+<span class="nc" id="L42">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
